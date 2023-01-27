@@ -12,15 +12,15 @@ import json
 class AdvSenleniumService():
 
     processStart = perf_counter()
-    chromiumService = Service(r'/chromedriver')
+    chromiumService = Service(r'./win_webdriver/chromedriver109.exe')
 
     options = Options()
     options.add_argument("--disable-notifications")
     options.add_argument("--headless")
     ''' under Windows Environment '''
-    # chrome = webdriver.Chrome("./win_webdriver/chromedriver")
-    ''' under Mac_ARM Environment '''
     chrome = webdriver.Chrome(service=chromiumService, options=options)
+    ''' under Mac_ARM Environment '''
+    # chrome = webdriver.Chrome(service=chromiumService, options=options)
     chrome.set_window_size(4096, 4096)
     ''' under Linux Environment '''
     # chrome = webdriver.Chrome("./linux_webdriver/chromedriver")
@@ -51,10 +51,11 @@ class AdvSenleniumService():
     soup = BeautifulSoup(chrome.page_source, 'html.parser')
     tableTitles = soup.find_all(
         'div', {'class': 'MuiDataGrid-columnHeaderTitle css-cc8tf1'})
-
+    i = 0
     tempTitleDict = {}
     tempRows = {}
-    tempHealth = {}
+    tempHealth = []
+
     for tableTitle in tableTitles:
         print('-------------------------------[Header]')
         print(tableTitle.text)
@@ -68,11 +69,9 @@ class AdvSenleniumService():
 
     healthRecords = soup.find_all('path', attrs={'d': 'M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2z'})
     for healthRecord in healthRecords:
-        i = 0
         print('-------------------------------[Health]')
         print('GOOD')
-        tempHealth.update({ i : True})
-        i + 1
+        tempHealth.append(True)
 
     processEnd = perf_counter()
     advRecords = {'header': tempTitleDict, 'rowsText': tempRows, 'healthStatus': tempHealth}
