@@ -12,7 +12,7 @@ import requests
 class AdvSenleniumService():
 
     processStart = perf_counter()
-    chromiumService = Service(r'./linux_webdriver/chromedriver109')
+    chromiumService = Service(r'./win_webdriver/chromedriver109')
 
     options = Options()
     options.add_argument("--disable-notifications")
@@ -76,8 +76,10 @@ class AdvSenleniumService():
     processEnd = perf_counter()
     advRecords = {'header': tempTitleDict, 'rowsText': tempRows, 'healthStatus': tempHealth}
     
-    print(json.dumps(advRecords))
+    res = requests.post('https://api.gols-synctree.com/getadvdata', json = json.dumps(advRecords).replace('\\"', ''))
 
-    # res = requests.post('', json = json.dumps(advRecords))
+    print(json.dumps(advRecords).replace('\\"', ''))
+
+    print(res.text)
 
     print('Elapsed Time in seconds: ', processEnd - processStart)
