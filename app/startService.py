@@ -7,23 +7,26 @@ from time import perf_counter
 from bs4 import BeautifulSoup
 import time
 import json
-
+import requests
 
 class AdvSenleniumService():
 
     processStart = perf_counter()
-    chromiumService = Service(r'./win_webdriver/chromedriver109.exe')
+    chromiumService = Service(r'./linux_webdriver/chromedriver109')
 
     options = Options()
     options.add_argument("--disable-notifications")
     options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument('--disable-dev-shm-usage') 
     ''' under Windows Environment '''
     chrome = webdriver.Chrome(service=chromiumService, options=options)
     ''' under Mac_ARM Environment '''
     # chrome = webdriver.Chrome(service=chromiumService, options=options)
-    chrome.set_window_size(4096, 4096)
     ''' under Linux Environment '''
-    # chrome = webdriver.Chrome("./linux_webdriver/chromedriver")
+    # chrome = webdriver.Chrome(service=chromiumService, options=options)
+
+    chrome.set_window_size(4096, 4096)
     chrome.get("https://mtr_advpanel_mmi.rocteccloud.com/#/Login")
     chrome.implicitly_wait(3)
     userName = chrome.find_element(By.ID, 'userNameInput')
@@ -57,25 +60,24 @@ class AdvSenleniumService():
     tempHealth = []
 
     for tableTitle in tableTitles:
-        print('-------------------------------[Header]')
-        print(tableTitle.text)
         tempTitleDict.update({tableTitles.index(tableTitle): tableTitle.text})
 
     tableRows = soup.find_all('div', {'class': 'MuiDataGrid-cellContent'})
     for tableRow in tableRows:
-        print('-------------------------------[Row]')
-        print(tableRow.text)
         tempRows.update({tableRows.index(tableRow): tableRow.text})
 
-    healthRecords = soup.find_all('path', attrs={'d': 'M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2z'})
+    healthRecords = soup.find_all('svg', attrs={'class': 'MuiSvgIcon-root MuiSvgIcon-fontSizeMedium islockedDeviceStatus css-vubbuv'})
     for healthRecord in healthRecords:
-        print('-------------------------------[Health]')
-        print('GOOD')
-        tempHealth.append(True)
+        if healthRecord.has_attr('style'):
+            tempHealth.append(False)
+        else:
+            tempHealth.append(True)
 
     processEnd = perf_counter()
     advRecords = {'header': tempTitleDict, 'rowsText': tempRows, 'healthStatus': tempHealth}
     
-    print(advRecords)
+    print(json.dumps(advRecords))
+
+    # res = requests.post('', json = json.dumps(advRecords))
 
     print('Elapsed Time in seconds: ', processEnd - processStart)
