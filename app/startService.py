@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 import time
 import json
 import requests
+from collections import OrderedDict
 
 class AdvSenleniumService():
 
@@ -54,9 +55,8 @@ class AdvSenleniumService():
     soup = BeautifulSoup(chrome.page_source, 'html.parser')
     tableTitles = soup.find_all(
         'div', {'class': 'MuiDataGrid-columnHeaderTitle css-cc8tf1'})
-    i = 0
     tempTitleDict = {}
-    tempRows = {}
+    tempRows = []
     tempHealth = []
 
     for tableTitle in tableTitles:
@@ -64,21 +64,26 @@ class AdvSenleniumService():
 
     tableRows = soup.find_all('div', {'class': 'MuiDataGrid-cellContent'})
     for tableRow in tableRows:
-        tempRows.update({tableRows.index(tableRow): tableRow.text})
+        tempRows.append(tableRow.text)
 
     healthRecords = soup.find_all('svg', attrs={'class': 'MuiSvgIcon-root MuiSvgIcon-fontSizeMedium islockedDeviceStatus css-vubbuv'})
     for healthRecord in healthRecords:
         if healthRecord.has_attr('style'):
-            tempHealth.append(False)
+            tempHealth.append('False')
         else:
-            tempHealth.append(True)
+            tempHealth.append('True')
 
     processEnd = perf_counter()
-    advRecords = {'header': tempTitleDict, 'rowsText': tempRows, 'healthStatus': tempHealth}
-    
-    res = requests.post('https://api.gols-synctree.com/getadvdata', json = json.dumps(advRecords).replace('\\"', ''))
 
-    print(json.dumps(advRecords).replace('\\"', ''))
+    advRecords = {'header': tempTitleDict, 'rowsText': tempRows, 'healthStatus': tempHealth}
+
+    res = requests.post('https://api.gols-synctree.com/getadvdata', json = advRecords)
+
+    print("################################LOCAL DEV################################")
+
+    print(advRecords)
+
+    print("################################SYNCTREE################################")
 
     print(res.text)
 
